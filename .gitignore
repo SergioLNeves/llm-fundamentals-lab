@@ -13,6 +13,7 @@ build/
 .venv/
 venv/
 env/
+.zed
 
 # Pytest
 .pytest_cache/
@@ -33,6 +34,10 @@ htmlcov/
 data/
 *.db
 *.sqlite
+
+# Tailwind
+bin/
+app/frontend/static/output.css
 
 # Logs
 *.log
