@@ -131,33 +131,6 @@ Cada modulo esta em `docs/challenges/modulo_N/task.md`. Leia o `task.md`,
 execute as tarefas na ordem e so avance quando o "Definition of Done" estiver
 satisfeito. Nao ha ordem errada para consultar modulos anteriores.
 
-
-## Estrutura do projeto
-
-```
-StudyLLM/
-├── README.md
-├── Makefile
-├── requirements.txt
-│
-├── app/
-│   ├── api/
-│   │   └── main.py          # FastAPI: entry point da aplicacao
-│   └── frontend/
-│       ├── static/          # CSS compilado (Tailwind)
-│       └── templates/       # Jinja2 templates
-│
-├── docs/
-│   └── challenges/
-│       ├── modulo_1/task.md
-│       ├── modulo_2/task.md
-│       ├── ...
-│       └── modulo_14/task.md
-│
-└── tests/
-```
-
-
 ## Filosofia
 
 Este projeto nao usa frameworks de agente, orquestradores de RAG nem
