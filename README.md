@@ -1,14 +1,14 @@
+```
+   _____ __            __      __    __    __  ___
+  / ___// /___  ______/ /_  __/ /   / /   /  |/  /
+  \__ \/ __/ / / / __  / / / / /   / /   / /|_/ /
+ ___/ / /_/ /_/ / /_/ / /_/ / /___/ /___/ /  / /
+/____/\__/\__,_/\__,_/\__, /_____/_____/_/  /_/
+                      /____/
 
-   ███████╗████████╗██╗   ██╗██████╗ ██╗   ██╗██╗     ██╗     ███╗   ███╗
-   ██╔════╝╚══██╔══╝██║   ██║██╔══██╗╚██╗ ██╔╝██║     ██║     ████╗ ████║
-   ███████╗   ██║   ██║   ██║██║  ██║ ╚████╔╝ ██║     ██║     ██╔████╔██║
-   ╚════██║   ██║   ██║   ██║██║  ██║  ╚██╔╝  ██║     ██║     ██║╚██╔╝██║
-   ███████║   ██║   ╚██████╔╝██████╔╝   ██║   ███████╗███████╗██║ ╚═╝ ██║
-   ╚══════╝   ╚═╝    ╚═════╝ ╚═════╝    ╚═╝   ╚══════╝╚══════╝╚═╝     ╚═╝
-                                                                         
-
-    Uma trilha de estudo pratico de LLMs, do fundamento probabilistico
-    ate um assistente tecnico rodando inteiramente na sua maquina.
+  Uma trilha de estudo pratico de LLMs, do fundamento probabilistico
+  ate um assistente tecnico rodando inteiramente na sua maquina.
+```
 
 
 # StudyLLM
