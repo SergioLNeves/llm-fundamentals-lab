@@ -1,45 +1,40 @@
-# Módulo 5 — Treino/Ajuste e Consolidação
+# Módulo 5 — Desafios Reais de LLM
 
-> **Objetivo:** sair do "usar LLM pronto" para "ajustar um LLM". Entender
-> fine-tuning leve (LoRA) e, opcionalmente, portar o core do projeto para Go,
-> consolidando tudo o que foi aprendido.
+> **Objetivo:** observar de forma controlada os problemas reais de LLM
+> (hallucination, limite de contexto, retrieval ruim) e construir uma camada
+> mínima de avaliação sobre o RAG do Módulo 4.
 
 **Status:** não iniciado.
-**Pré-requisito:** Módulos 1-4 concluídos.
+**Entrega de código:** camada de avaliação/observação no projeto.
 
 ---
 
-## Tarefas — Fine-tuning (conceito + prática leve)
+## Tarefas — Experimentação crítica
 
-- [ ] Entender a diferença entre fine-tuning completo vs LoRA/PEFT
-      (por que LoRA é viável em hardware comum)
-- [ ] Preparar um dataset pequeno (formato instrução -> resposta)
-- [ ] Rodar um fine-tuning leve (LoRA) em um modelo pequeno
-- [ ] Criar um Modelfile no Ollama com o modelo ajustado e testar
-- [ ] Comparar respostas do modelo base vs ajustado no mesmo prompt
+- [ ] Fazer uma pergunta cuja resposta **não está** nos documentos e observar:
+      o modelo inventa (hallucination) ou admite que não sabe?
+- [ ] Ajustar o prompt do `query_service` para instruir "responda apenas com
+      base no contexto; se não houver, diga que não sabe" — comparar antes/depois
+- [ ] Testar pergunta ambígua e observar a qualidade do retrieval
+- [ ] Forçar chunks mal cortados (chunk muito pequeno / muito grande) e
+      observar o impacto na resposta
 
-## Tarefas — Avaliação do limite de uma LLM
+## Tarefas — Avaliação
 
-- [ ] Definir uma tarefa específica e medir até onde o modelo pequeno consegue
-      ir (objetivo original: "entender o limite de uma LLM")
-- [ ] Documentar: o que melhora com RAG, o que melhora com fine-tuning, o que
-      só melhora com modelo maior
-
-## Tarefas — Port para Go (opcional)
-
-- [ ] Portar o core (cosine similarity, chamada ao Ollama, retrieval) para Go
-      com arquitetura hexagonal real (`samber/do`, ports como interfaces)
-- [ ] Comparar a experiência de implementação Python vs Go
+- [ ] Medir relevância do retrieval: para uma pergunta conhecida, os top-k
+      chunks retornados fazem sentido?
+- [ ] Anotar limitações: onde o RAG falha e por quê (retrieval vs geração)
 
 ## Conceitos envolvidos
 
-- Fine-tuning completo vs PEFT/LoRA
-- Dataset de instrução
-- Quando usar RAG vs fine-tuning vs modelo maior
-- Limites reais de modelos pequenos
+- Hallucination e como RAG reduz (mas não elimina)
+- Context window e seus limites
+- Qualidade de chunking impacta mais que o LLM em muitos casos
+- Avaliação: benchmark vs uso real
+- Prompt como "grounding" (ancorar resposta no contexto)
 
 ## Definition of Done
 
-- Consigo explicar, com base em experiência prática, quando vale RAG, quando
-  vale fine-tuning, e quando o problema só se resolve com um modelo maior.
-- (Opcional) Core do RAG rodando em Go.
+- Consigo provocar e identificar uma hallucination.
+- Consigo explicar se uma resposta ruim veio do retrieval (contexto errado)
+  ou da geração (modelo ignorou o contexto).

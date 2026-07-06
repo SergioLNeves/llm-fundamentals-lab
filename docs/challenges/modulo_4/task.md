@@ -1,40 +1,50 @@
-# Módulo 4 — Desafios Reais de LLM
+# Módulo 4 — Tipos de LLM e Estratégias de Criação
 
-> **Objetivo:** observar de forma controlada os problemas reais de LLM
-> (hallucination, limite de contexto, retrieval ruim) e construir uma camada
-> mínima de avaliação sobre o RAG do Módulo 3.
+> **Objetivo:** entender como modelos são criados (pretraining, fine-tuning,
+> RLHF), as diferenças de arquitetura (densos vs MoE) e quantização. Ter um
+> RAG funcional ponta a ponta: indexar um documento e responder perguntas
+> sobre ele.
 
 **Status:** não iniciado.
-**Entrega de código:** camada de avaliação/observação no projeto.
+**Entrega de código:** RAG funcional (indexar + perguntar).
 
 ---
 
-## Tarefas — Experimentação crítica
+## Tarefas — Teoria
 
-- [ ] Fazer uma pergunta cuja resposta **não está** nos documentos e observar:
-      o modelo inventa (hallucination) ou admite que não sabe?
-- [ ] Ajustar o prompt do `query_service` para instruir "responda apenas com
-      base no contexto; se não houver, diga que não sabe" — comparar antes/depois
-- [ ] Testar pergunta ambígua e observar a qualidade do retrieval
-- [ ] Forçar chunks mal cortados (chunk muito pequeno / muito grande) e
-      observar o impacto na resposta
+- [ ] Anotar a diferença entre: pretraining, fine-tuning, instruction-tuning,
+      RLHF (1 frase cada)
+- [ ] Entender modelos densos vs MoE (Mixture of Experts) — por que MoE é
+      "barato de rodar, caro de armazenar"
+- [ ] Entender quantização: por que um modelo "8B" roda numa máquina comum
+      (relação entre bits por peso, RAM/VRAM e perda de qualidade)
+- [ ] Comparar tamanhos: rodar mesmo prompt em modelo pequeno vs maior e
+      anotar diferença de qualidade de raciocínio
 
-## Tarefas — Avaliação
+## Tarefas — Código
 
-- [ ] Medir relevância do retrieval: para uma pergunta conhecida, os top-k
-      chunks retornados fazem sentido?
-- [ ] Anotar limitações: onde o RAG falha e por quê (retrieval vs geração)
+- [ ] Implementar a chamada real ao modelo de embedding (Ollama)
+- [ ] Implementar a chamada real ao modelo de geração (Ollama)
+- [ ] Implementar um armazenamento de chunks com busca por similaridade
+      (pode ser em memória nesta fase)
+- [ ] Implementar o fluxo de indexação: documento -> chunking -> embedding ->
+      armazenamento
+- [ ] Implementar o fluxo de consulta: pergunta -> embedding -> busca dos
+      chunks mais relevantes -> montagem do prompt -> geração da resposta
+- [ ] Expor esse fluxo de alguma forma utilizável (API, CLI, script — sua
+      escolha) e testar com um `.md` real
+- [ ] Fazer o retorno da consulta incluir as fontes/chunks usados (não só a
+      resposta em texto livre), usando `format: "json"` ou JSON Schema
 
 ## Conceitos envolvidos
 
-- Hallucination e como RAG reduz (mas não elimina)
-- Context window e seus limites
-- Qualidade de chunking impacta mais que o LLM em muitos casos
-- Avaliação: benchmark vs uso real
-- Prompt como "grounding" (ancorar resposta no contexto)
+- Conhecimento paramétrico (treino) vs contextual (RAG)
+- Pretraining / fine-tuning / RLHF
+- Densos vs MoE; quantização
+- Chunking, retrieval top-k, prompt assembly
 
 ## Definition of Done
 
-- Consigo provocar e identificar uma hallucination.
-- Consigo explicar se uma resposta ruim veio do retrieval (contexto errado)
-  ou da geração (modelo ignorou o contexto).
+- Consigo indexar um `.md` e fazer uma pergunta, recebendo resposta baseada
+  no conteúdo do documento.
+- Consigo explicar por que a resposta mudou ao usar RAG vs sem RAG.

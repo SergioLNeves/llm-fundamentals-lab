@@ -1,84 +1,124 @@
-# Módulo 6 — Tool Use / Agentes: Chat com o Vault Obsidian
+# Módulo 6 — RAG de Produção: Vector DB e Reranking
 
-> **Objetivo:** aprender o paradigma de **tool use (function calling)** —
-> onde o LLM decide *quando* e *qual* ferramenta chamar — construindo um chat
-> que lê documentação Markdown de um vault Obsidian. Contrastar com o RAG dos
-> Módulos 2-4.
+> **Objetivo:** evoluir o RAG em memória do Módulo 4 para uma arquitetura
+> de produção: banco vetorial persistente, índice eficiente (HNSW), busca
+> híbrida e reranking. Sentir a diferença de qualidade de retrieval que cada
+> técnica adiciona.
 
 **Status:** não iniciado.
-**Pré-requisito:** Módulo 3 concluído (RAG funcional).
-**Entrega de código:** chat com acesso de leitura ao vault.
+**Pré-requisito:** Módulos 4 e 5 concluídos (RAG funcional + desafios observados).
+**Entrega de código:** RAG com vector DB persistente, busca híbrida e reranking.
 
 ---
 
-## Conceito central — a diferença que esse módulo ensina
+## Por que o RAG em memória do Módulo 4 não escala
 
-| | RAG (Módulos 2-4) | Tool Use (este módulo) |
+O RAG do Módulo 4 armazena embeddings em memória e faz busca por força bruta
+(cosine similarity contra todos os vetores). Isso funciona para dezenas de
+chunks, mas quebra em produção:
+
+| Problema | Módulo 4 | Este módulo |
 |---|---|---|
-| Quem busca o contexto | Você (pipeline fixo) | O **modelo** decide |
-| Como o contexto chega | "Empurrado" no prompt | "Puxado" via chamada de ferramenta |
-| Paradigma | Retrieval por similaridade | Agente com ferramentas |
-| Controle | Total e previsível | Flexível, menos previsível |
-
-> Os dois resolvem "LLM conhecer meus docs", mas por caminhos opostos.
-> Fazer ambos e sentir o contraste é o aprendizado principal.
+| Persistência | Perde tudo ao reiniciar | Vector DB persiste em disco |
+| Velocidade de busca | O(n) força bruta | O(log n) com índice HNSW |
+| Qualidade do retrieval | Só semântica | Híbrido: semântica + keyword |
+| Ordem dos chunks | Qualquer ordem | Reranking melhora relevância |
 
 ---
 
-## Segurança (ler antes de começar)
+## Conceitos novos
 
-- [ ] Fazer **backup do vault** (de preferência com git) antes de qualquer teste
-- [ ] Trabalhar em modo **read-only** nesta fase — nada de escrita/edição
-- [ ] Restringir o acesso a uma pasta específica do vault, não o vault inteiro
+### HNSW (Hierarchical Navigable Small World)
+Índice de grafos que permite busca aproximada de vizinhos mais próximos em
+tempo sub-linear. Usado por Chroma, Qdrant e pgvector internamente. Você não
+implementa — você entende para saber o que está usando.
+
+### Busca híbrida
+Combina busca semântica (por embedding) com busca por keyword (BM25/TF-IDF).
+Semântica captura intenção; keyword captura termos exatos. A combinação
+supera qualquer uma isolada, especialmente em documentos técnicos com nomes
+específicos (funções, classes, erros).
+
+### Reranking (cross-encoder)
+Após buscar os top-k chunks por similaridade, um modelo de reranking
+(cross-encoder) avalia cada chunk **em relação à pergunta** e reordena.
+Diferença do bi-encoder (que gera embeddings separados): o cross-encoder
+lê pergunta + chunk juntos, gerando score muito mais preciso.
+
+> **Conexão com Módulo 13**: reranking resolve parcialmente o "lost in the
+> middle" — ao colocar os chunks mais relevantes no início do prompt, você
+> garante que o modelo veja o que importa primeiro.
 
 ---
 
 ## Tarefas — Teoria
 
-- [ ] Entender function calling: o modelo não executa nada; ele **pede** para
-      uma ferramenta ser chamada, e o seu código executa e devolve o resultado
-- [ ] Entender o loop do agente: prompt -> modelo pede tool -> código executa
-      -> resultado volta pro modelo -> modelo responde (ou pede outra tool)
-- [ ] Confirmar quais modelos do Ollama suportam tools (ex: llama3.1)
+- [ ] Entender HNSW intuitivamente: por que grafos de vizinhança permitem
+      busca sub-linear? (não precisa implementar, só entender a estrutura)
+- [ ] Entender BM25: como ele difere de busca semântica? Em que casos
+      keyword supera embedding?
+- [ ] Entender cross-encoder vs bi-encoder: por que cross-encoder é mais
+      preciso mas mais lento?
 
-## Tarefas — Código (tool use manual em Python)
+## Tarefas — Código
 
-> Mesma filosofia do RAG: implementar manual primeiro para entender por dentro.
+### Etapa 1 — Vector DB persistente
 
-- [ ] Definir uma ferramenta `read_note(path)` que lê um `.md` do vault
-- [ ] Definir uma ferramenta `list_notes()` ou `search_notes(termo)`
-- [ ] Descrever essas ferramentas no formato de tools da API do Ollama (schema)
-- [ ] Implementar o loop: enviar pergunta + tools -> se o modelo pedir uma
-      ferramenta, executar e devolver o resultado -> repetir até resposta final
-- [ ] Testar: "o que minhas notas dizem sobre X?" e observar o modelo
-      escolhendo qual nota ler
+- [ ] Escolher e instalar um dos três: **Chroma** (mais simples, local),
+      **Qdrant** (mais features, suporta hybrid search nativo) ou
+      **pgvector** (se já usa PostgreSQL)
+- [ ] Migrar o código de indexação do Módulo 4 para usar o vector DB escolhido
+- [ ] Verificar que o índice persiste: indexar, reiniciar o processo, buscar
+      e confirmar que os chunks ainda estão lá
 
-## Tarefas — MCP (padrão da indústria, opcional/avançado)
+### Etapa 2 — Busca híbrida
 
-- [ ] Entender o que um MCP server de Obsidian faz (expõe o vault como
-      ferramentas padronizadas; alguns leem o disco direto, outros exigem o
-      plugin Obsidian Local REST API)
-- [ ] Escolher um server **read-only** e conectar a um cliente
-- [ ] Comparar: implementar as ferramentas na mão vs usar um MCP pronto
+- [ ] Implementar busca BM25 sobre os mesmos documentos (biblioteca `rank_bm25`
+      ou a busca híbrida nativa do Qdrant)
+- [ ] Combinar scores semântico e BM25 com uma função de fusão simples
+      (ex: `score = alpha * semantic + (1 - alpha) * bm25`)
+- [ ] Testar com uma pergunta que contém um termo técnico exato (nome de função,
+      classe, erro): a busca híbrida encontra melhor que só embedding?
 
-## Tarefas — Avaliação (conexão com Módulo 4)
+### Etapa 3 — Reranking
 
-- [ ] Fazer a MESMA pergunta via RAG e via tool use; comparar qualidade e
-      previsibilidade das respostas
-- [ ] Observar falhas típicas de agente: chamar a ferramenta errada, não
-      chamar nenhuma, ou entrar em loop
-- [ ] Anotar: em quais situações RAG é melhor e em quais tool use é melhor
+- [ ] Usar um cross-encoder para reordenar os top-k resultados
+      (ex: `cross-encoder/ms-marco-MiniLM-L-6-v2` via `sentence-transformers`)
+- [ ] Comparar a ordem antes e depois do reranking: o chunk mais relevante
+      subiu para o topo?
+- [ ] Medir o impacto na resposta final do LLM: a qualidade melhorou?
+
+### Etapa 4 — Avaliação comparativa
+
+- [ ] Usar o conjunto de perguntas do Módulo 5 e medir retrieval@k: quantas
+      vezes o chunk correto aparece nos top-3 com cada configuração:
+      - Só embedding (Módulo 4)
+      - Embedding + vector DB (Etapa 1)
+      - Busca híbrida (Etapa 2)
+      - + Reranking (Etapa 3)
+
+---
 
 ## Conceitos envolvidos
 
-- Function calling / tool use
-- Loop de agente (model -> tool -> result -> model)
-- Contexto "empurrado" (RAG) vs "puxado" (agente)
-- MCP como padronização de tool use
-- Trade-off: previsibilidade vs flexibilidade
+- Vector DB e persistência de índices
+- HNSW — busca aproximada de vizinhos mais próximos
+- BM25 — busca por keyword com penalização por frequência
+- Busca híbrida — fusão de scores semântico e keyword
+- Cross-encoder vs bi-encoder para reranking
+- Retrieval@k como métrica de avaliação
+
+## Conexão com módulos anteriores
+
+| Módulo | Componente evoluído aqui |
+|--------|--------------------------|
+| 2 — Arquitetura | embeddings: agora persistidos e indexados |
+| 4 — RAG | pipeline em memória → vector DB + busca híbrida |
+| 5 — Desafios | retrieval ruim identificado → reranking como solução |
 
 ## Definition of Done
 
-- Consigo fazer uma pergunta e ver o modelo decidindo sozinho qual nota ler.
-- Consigo explicar, com base em teste prático, a diferença entre RAG e tool
-  use e quando usar cada um.
+- O índice persiste após reiniciar o processo.
+- A busca híbrida supera a busca só por embedding em pelo menos uma pergunta
+  com termo técnico específico.
+- Consigo explicar quando o reranking ajuda e quando é desperdício de tempo.

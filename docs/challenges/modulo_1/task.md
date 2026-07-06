@@ -12,15 +12,15 @@
 
 ## Tarefas
 
-- [ ] Rodar `ollama run llama3.2` e completar uma frase simples
-- [ ] Testar instrução composta ("complete X e pare na primeira palavra") e
+- [x] Rodar `ollama run llama3.2` e completar uma frase simples
+- [x] Testar instrução composta ("complete X e pare na primeira palavra") e
       observar a falha de instruction following
-- [ ] Gerar JSON via prompt em texto (`/api/generate`) e avaliar se quebraria
+- [x] Gerar JSON via prompt em texto (`/api/generate`) e avaliar se quebraria
       um parse direto
-- [ ] Testar o parâmetro nativo `format: "json"` e observar:
+- [x] Testar o parâmetro nativo `format: "json"` e observar:
       - sintaxe garantida
       - schema **não** garantido (campos inventados)
-- [ ] Anotar em 3-4 linhas: por que um LLM nunca deve ser o único guardião de
+- [x] Anotar em 3-4 linhas: por que um LLM nunca deve ser o único guardião de
       uma regra crítica
 
 ## Conceitos envolvidos

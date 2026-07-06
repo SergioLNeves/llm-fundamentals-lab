@@ -41,3 +41,6 @@ app/frontend/static/output.css
 
 # Logs
 *.log
+
+# scripts to Study
+scripts_module/
